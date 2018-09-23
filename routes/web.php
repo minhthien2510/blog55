@@ -22,9 +22,9 @@ Route::get('blog/updateDB', function () {
         if (\Illuminate\Support\Facades\DB::table('posts')->where('name', $post->url_path)->doesntExist()) {
             $query1 = new \App\Post();
             $query1->title = $post->title;
-            $query1->name = $post->url_path;
+            $query1->name = $post->name;
             $query1->content = $post->content;
-            $query1->excerpt = $post->summary_content;
+            $query1->excerpt = $post->excerpt;
             $query1->image = $post->thumbnail;
             $query1->save();
 
