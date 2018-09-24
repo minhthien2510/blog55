@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Console\Commands;
+
 use DiDom\Document;
 use DiDom\Element;
 
