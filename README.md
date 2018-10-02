@@ -1,5 +1,5 @@
 # Hướng dẫn sử dụng
 - Chạy lệnh
 ```
-php artisan command:crawlToDB
+php artisan command:crawl
 ```

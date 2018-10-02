@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Console\Commands;
+require_once 'app/helpers.php';
 
 use App\Category;
 use App\CategoryPost;
@@ -15,7 +16,7 @@ class CrawlBlog extends Command
      *
      * @var string
      */
-    protected $signature = 'command:crawlToDB';
+    protected $signature = 'crawl';
 
     /**
      * The console command description.
@@ -41,64 +42,59 @@ class CrawlBlog extends Command
      */
     public function handle()
     {
-        $itviecBlog = ['itviec' => 'https://itviec.com/blog/'];
-
-        $page        = 1;
-        $url         = $itviecBlog['itviec'] . 'page/' . $page;
-        $domDocument = new \DOMDocument();
-        $document    = new Document();
-        $scrape      = new Scrape();
+        $blogs = ['itviec' => 'https://itviec.com/blog/'];
+        $page  = 1;
+        $url   = $blogs['itviec'] . 'page/' . $page;
 
         // Could load the blog page
-        while (@$domDocument->loadHTMLFile($url)) {
-            $document->loadHtml($domDocument->saveHTML());
+        while (is_load($url)) {
+            $document = new Document($url, true);
 
             if ($document->has('.post.teaser')) {
                 $posts = $document->find('.post.teaser');
 
                 foreach ($posts as $post) {
-                    $postUrl = $itviecBlog['itviec'] . $scrape->getPathName($post);
+                    $postUrl = $blogs['itviec'] . get_path_name($post);
 
                     // Could not load the blog post
-                    if (!@$domDocument->loadHTMLFile($postUrl)) {
+                    if (! is_load($postUrl)) {
                         continue;
                     }
 
                     // If post is exist in DB
-                    if (count(Post::where('name', $scrape->getPathName($post))->get()) > 0) {
+                    if (Post::where('name', get_path_name($post))->exists()) {
                         continue;
                     }
 
-                    $query1 = new Post();
-                    $query1->title = $scrape->getTitle($post);
-                    $query1->name = $scrape->getPathName($post);
-                    $query1->content = $scrape->getContent($postUrl);
-                    $query1->excerpt = $scrape->getSummaryContent($post);
-                    $query1->image = $scrape->getThumbnail($post, $scrape->getPathName($post));
-                    $query1->save();
+                    $postDB = new Post();
+                    $postDB->title = get_title($post);
+                    $postDB->name = get_path_name($post);
+                    $postDB->excerpt = get_excerpt($post);
+                    $postDB->content = get_content($postUrl);
+                    $postDB->image = get_image($post, get_path_name($post));
+                    $postDB->save();
 
-                    foreach ($scrape->getCategories($post) as $key => $value) {
+                    foreach (get_categories($post) as $key => $value) {
                         // If category doesn't exist
-                        if (count(Category::where('slug', $key)->get()) == 0) {
-                            Category::insert([
-                                'slug' => $key,
-                                'name' => $value
-                            ]);
+                        if (! Category::where('slug', $key)->exists()) {
+                            $categoryDB = new Category();
+                            $categoryDB->name = $value;
+                            $categoryDB->slug = $key;
+                            $categoryDB->save();
                         }
 
-                        $query2 = Category::where('slug', $key)->first();
+                        $categoryDB = Category::where('slug', $key)->first();
 
-                        $query3 = new CategoryPost();
-                        $query3->post_id = $query1->id;
-                        $query3->category_id = $query2->id;
-                        $query3->save();
+                        $categoryPostDB = new CategoryPost();
+                        $categoryPostDB->post_id = $postDB->id;
+                        $categoryPostDB->category_id = $categoryDB->id;
+                        $categoryPostDB->save();
                     }
                 }
             }
 
             $page++;
-
-            $url = $itviecBlog['itviec'] . 'page/' . $page;
+            $url = $blogs['itviec'] . 'page/' . $page;
         }
 
         $this->info("Success.");
