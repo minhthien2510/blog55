@@ -14,3 +14,8 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/search', function () {
+    $q = \App\Post::search('keyword')->get();
+    return $q;
+});

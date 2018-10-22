@@ -43,6 +43,9 @@ if (! function_exists('is_load')) {
      */
     function is_load($url)
     {
+        if ($url === '//itviec.com/blog/wp-content/plugins/a3-lazy-load/assets/images/lazy_placeholder.gif') {
+            return false;
+        }
         $headers = get_headers($url);
         return $headers[0] !== 'HTTP/1.1 404 Not Found' ? true : false;
     }
