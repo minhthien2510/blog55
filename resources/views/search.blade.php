@@ -8,7 +8,7 @@
                 <div class="panel-heading">Search</div>
 
                 <div class="panel-body">
-                    <form class="form-horizontal" method="POST" action="{{ route('search') }}">
+                    <form class="form-inline" method="POST" action="{{ route('search') }}">
                         {{ csrf_field() }}
 
                         <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
@@ -35,42 +35,74 @@
 @endsection
 
 @section('script')
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-    <script src="https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js"></script>
-    <script>
-        jQuery(document).ready(function($) {
-            var engine = new Bloodhound({
-                remote: {
-                    url: 'api/search?q=%QUERY%',
-                    wildcard: '%QUERY%'
-                },
-                datumTokenizer: Bloodhound.tokenizers.whitespace('q'),
-                queryTokenizer: Bloodhound.tokenizers.whitespace
-            });
-
-            engine.initialize();
-
-            $("#search").typeahead({
-                hint: true,
-                highlight: true,
-                minLength: 1
-            }, {
-                source: engine.ttAdapter(),
-                name: 'category',
-                templates: {
-                    empty: [
-                        '<div class="list-group search-results-dropdown"><div class="list-group-item">Không có kết quả phù hợp.</div></div>'
-                    ],
-                    header: [
-                        '<div class="list-group search-results-dropdown">'
-                    ],
-                    suggestion: function (data) {
-                        // console.log(data);
-                        return '<a href="#" class="list-group-item">' + data.name + '</a>'
-                    }
-                }
-            });
+<script src="https://twitter.github.io/typeahead.js/js/handlebars.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js"></script>
+<script>
+    jQuery(document).ready(function($) {
+        var cateTeams  = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('team'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: 'categories/search?q=%QUERY%',
+                wildcard: '%QUERY%'
+            }
         });
-    </script>
+
+        var postTeams  = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('team'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: 'posts/search?q=%QUERY%',
+                wildcard: '%QUERY%'
+            }
+        });
+
+        // cateTeams.initialize();
+
+        $("#search").typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        }, {
+            name: 'categories',
+            display: 'name',
+            source: cateTeams,
+            templates: {
+                // empty: [
+                //     '<div class="empty-message">',
+                //     'unable to find any Best Picture winners that match the current query',
+                //     '</div>'
+                // ].join('\n'),
+                header: [
+                    '<h3 class="league-name">Categories'
+                ],
+                suggestion: function (data) {
+                    console.log(data);
+                    return '<div class="list-group-item tt-suggestion tt-selectable" style="cursor: pointer">' + data.name + '</div>'
+                },
+                // footer: Handlebars.compile('</div>')
+            }
+        }, {
+            name: 'posts',
+            display: 'name',
+            source: postTeams,
+            templates: {
+                // empty: [
+                //     '<div class="empty-message">',
+                //     'unable to find any Best Picture winners that match the current query',
+                //     '</div>'
+                // ].join('\n'),
+                header: [
+                    '<h3 class="league-name">Posts'
+                ],
+                suggestion: function (data) {
+                    console.log(data);
+                    return '<div class="list-group-item tt-suggestion tt-selectable" style="cursor: pointer">' + data.name + '</div>'
+                }
+            }
+        });
+    });
+</script>
 @stop

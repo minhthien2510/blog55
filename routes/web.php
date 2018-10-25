@@ -15,21 +15,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/api/search', function () {
-    $a = array();
-
+Route::get('/categories/search', function () {
     $categories = \App\Category::search($_GET['q'])->get();
-    foreach ($categories as $category) {
-        array_push($a, ['id' => $category->id, 'name' => $category->name]);
-    }
+    return $categories;
+})->name('categories.search');
 
-//    $posts = \App\Post::search('')->get();
-//    foreach ($posts as $post) {
-//        array_push($a, $post->title);
-//    }
-
-    return $a;
-})->name('api-search');
+Route::get('/posts/search', function () {
+    $posts = \App\Post::search($_GET['q'])->get();
+    return $posts;
+})->name('posts.search');
 
 Auth::routes();
 
@@ -37,4 +31,24 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/search', function () {
     return view('search');
+})->name('search');
+
+Route::post('/search', function () {
+    $client = Elasticsearch\ClientBuilder::create()->build();
+
+    $params = [
+        'index' => 'es',
+        'body' => [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        [ 'match' => [ 'name' => $_POST['search'] ] ]
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    return $client->search($params);
+
 })->name('search');
