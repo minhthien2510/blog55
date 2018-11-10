@@ -86,7 +86,7 @@
             }
         }, {
             name: 'posts',
-            display: 'name',
+            display: 'title',
             source: postTeams,
             templates: {
                 // empty: [
@@ -99,7 +99,7 @@
                 ],
                 suggestion: function (data) {
                     console.log(data);
-                    return '<div class="list-group-item tt-suggestion tt-selectable" style="cursor: pointer">' + data.name + '</div>'
+                    return '<div class="list-group-item tt-suggestion tt-selectable" style="cursor: pointer">' + data.title + '</div>'
                 }
             }
         });

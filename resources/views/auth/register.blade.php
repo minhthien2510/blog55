@@ -63,6 +63,15 @@
 
                         <div class="form-group">
                             <div class="col-md-6 col-md-offset-4">
+                                <div id="g-recaptcha"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                <button type="reset" class="btn btn-primary">
+                                    Reset
+                                </button>
                                 <button type="submit" class="btn btn-primary">
                                     Register
                                 </button>
@@ -75,3 +84,49 @@
     </div>
 </div>
 @endsection
+
+@section('style')
+    <style>
+    </style>
+@stop
+
+@section('script')
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=en" async defer></script>
+
+    <script type="text/javascript">
+        var verifyCallback = function(response) {
+            console.log(response);
+        };
+
+        var onRecaptchaExpired = function() {
+            console.log("Your Recaptcha has expired, please verify it again !");
+        };
+
+        var widgetId;
+
+        var onloadCallback = function() {
+            widgetId = grecaptcha.render('g-recaptcha', {
+                'sitekey': '6LcFtiQTAAAAAA6ys3czokyOo34igAiQNjugrwRO',
+                'callback': verifyCallback,
+                'theme': 'light',
+                'size': 'normal',
+                'expired-callback': onRecaptchaExpired,
+                // 'error-callback': onRecaptchaError
+            });
+
+            if ((scale = $('#g-recaptcha').width() / 304) < 1) {
+                $('#g-recaptcha').css({
+                    'height': 78 * scale,
+                    'transform':  'scale(' + scale + ')',
+                    '-webkit-transform': 'scale(' + scale + ')',
+                    'transform-origin': '0 0',
+                    '-webkit-transform-origin': '0 0'
+                });
+            }
+        };
+
+        $('form').bind('reset', function () {
+            grecaptcha.reset(widgetId);
+        });
+    </script>
+@stop
